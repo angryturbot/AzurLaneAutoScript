@@ -83,7 +83,7 @@ class GitManager(DeployConfig):
     def git_install(self):
         logger.hr('Update Alas', 0)
 
-        if not self.AutoUpdate:
+        if not self.AutoUpdate or True:
             logger.info('AutoUpdate is disabled, skip')
             return
 
