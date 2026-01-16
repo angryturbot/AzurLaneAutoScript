@@ -15,11 +15,11 @@ class CombatAuto(ModuleBase):
         """
         If joystick appear, combat is under manual mode.
         """
-        if self.appear(COMBAT_AUTO, offset=(20, 20)):
+        if self.appear(COMBAT_AUTO):
             return True
-        if self.appear(COMBAT_AUTO_133, offset=(20, 20)):
+        if self.appear(COMBAT_AUTO_133):
             return True
-        if self.appear(COMBAT_AUTO_150, offset=(20, 20)):
+        if self.appear(COMBAT_AUTO_150):
             return True
         return False
 
