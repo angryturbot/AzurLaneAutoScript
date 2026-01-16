@@ -179,6 +179,8 @@ class Enhancement(Dock):
                     'Enhancement impossible, ship currently in battle. Swiping to next ship if feasible')
                 nonlocal need_to_skip
                 need_to_skip = True
+                nonlocal ship_count
+                ship_count -= 1
                 return "state_enhance_fail"
             elif self.handle_popup_confirm('ENHANCE'):
                 logger.info('Trying a temporary ship')
