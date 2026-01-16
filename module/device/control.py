@@ -155,6 +155,7 @@ class Control(Hermit, Minitouch, Scrcpy, MaaTouch, NemuIpc):
             'Drag %s -> %s' % (point2str(*p1), point2str(*p2))
         )
         method = self.config.Emulator_ControlMethod
+        swipe_duration *= 1.2 # 2.0 for vm
         if method == 'minitouch':
             self.drag_minitouch(p1, p2, point_random=point_random)
         elif method == 'uiautomator2':
