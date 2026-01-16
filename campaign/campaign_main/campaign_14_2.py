@@ -78,13 +78,13 @@ class Campaign(CampaignBase):
 
         if self.clear_roadblocks([road_A5, road_H7], weakest=True):
             return True
-        if self.clear_filter_enemy(self.ENEMY_FILTER, preserve=1):
+        if self.clear_filter_enemy('1T > 1L > 1E > 1M > 2T > 2L > 3L > 2E > 2M > 3T > 3E > 3M', preserve=1):
             return True
 
         return self.battle_default()
 
     def battle_5(self):
-        if self.clear_filter_enemy(self.ENEMY_FILTER, preserve=0):
+        if self.clear_filter_enemy('1T > 1L > 1E > 1M > 2T > 2L > 3L > 2E > 2M > 3T > 3E > 3M', preserve=0):
             return True
 
         return self.battle_default()
