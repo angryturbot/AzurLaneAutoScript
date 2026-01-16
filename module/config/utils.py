@@ -401,7 +401,7 @@ def get_server_next_update(daily_trigger):
         s = (future - local_now).total_seconds() % 86400
         future = local_now + timedelta(seconds=s)
         trigger.append(future)
-    update = sorted(trigger)[0]
+    update = sorted(trigger)[0] + timedelta(minutes=1)
     return update
 
 
@@ -425,7 +425,7 @@ def get_server_last_update(daily_trigger):
         s = (future - local_now).total_seconds() % 86400 - 86400
         future = local_now + timedelta(seconds=s)
         trigger.append(future)
-    update = sorted(trigger)[-1]
+    update = sorted(trigger)[-1] + timedelta(minutes=1)
     return update
 
 
