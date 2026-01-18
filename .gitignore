@@ -19,6 +19,7 @@ config/reloadflag
 config/reloadalas
 test.py
 test/
+deploy/*
 
 # Created by .ignore support plugin (hsz.mobi)
 
