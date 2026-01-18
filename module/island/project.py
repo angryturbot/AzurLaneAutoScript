@@ -3,6 +3,7 @@ import cv2
 import re
 import numpy as np
 from scipy import signal
+import sys
 
 import module.config.server as server
 from module.base.button import Button, ButtonGrid
@@ -674,6 +675,7 @@ class IslandProjectRun(IslandUI):
     def project_receive_and_start(self, proj, button, character, option, project_id, ensure=True):
         """
         Receive and start a project is in the current page.
+        Returns success, then whether to recalculate button offsets
 
         Args:
             proj (IslandProject): the project to ensure
@@ -683,20 +685,21 @@ class IslandProjectRun(IslandUI):
             ensure (bool): whether to call ensure_project() after project start
         """
         if not self.project_receive(button):
-            return True
+            return True, False
         if not self.project_character_select(character):
             logger.warning('Island select role failed due to game bug, retrying')
-            return False
+            return False, True
         if not self.product_select(option, project_id):
-            return True
+            self.ensure_project(proj)
+            return True, True
         if not self.product_select_confirm():
             self.character = 'manjuu'
             self.ensure_project(proj)
-            return False
+            return False, True
         self.ui_ensure_management_page()
         if ensure:
             self.ensure_project(proj)
-        return True
+        return True, True
 
     def island_project_character(self, project: IslandProject):
         """
@@ -760,7 +763,11 @@ class IslandProjectRun(IslandUI):
                 lambda proj: proj.name in names and proj.name not in self.project.get('name'))
             self.project = self.project.add_by_eq(projects)
 
-            for proj in projects:
+            skip_projects_after = sys.maxsize
+            for i, proj in enumerate(projects):
+                if i >= skip_projects_after:
+                    timeout.reset()
+                    break
                 logger.hr('Island Project')
                 logger.attr('Project_name', proj)
                 if proj.name == names[-1]:
@@ -769,16 +776,42 @@ class IslandProjectRun(IslandUI):
                 character_config = self.island_project_character(proj)
                 option_config = self.island_project_option(proj)
                 option_num = len(option_config)
-                for button, character, option, index in zip(
-                        proj.slot_buttons.buttons, character_config, option_config, range(option_num)):
+                for character, option, index in zip(character_config, option_config, range(option_num)):
+                    button = proj.slot_buttons.buttons[index]
                     if option is None:
                         continue
                     self.character = character
                     # retry 3 times because of a game bug
                     for _ in range(3):
                         ensure = not end or index != option_num - 1
-                        if self.project_receive_and_start(proj, button, self.character, option, proj.id, ensure):
+                        success, rescreenshot = self.project_receive_and_start(proj, button, self.character, option, proj.id, ensure)                  
+                        if rescreenshot:
+                            while 1:
+                                self.device.screenshot()
+                                if timeout.reached():
+                                    break
+                                projects2 = self.project_detect(self.device.image)
+                                projects2: SelectedGrids = projects2.filter(
+                                    lambda proj2: proj2.name == proj.name)
+                                if len(projects2) == 1:
+                                    pupdate = projects2[0]
+                                    ydelta = pupdate.y1 - proj.y1
+                                    logger.info(f"Updating project Y-values by {ydelta}")
+                                    skip_after = sys.maxsize
+                                    for j, ptoupdate in enumerate(projects):
+                                        ptoupdate.y1 += ydelta
+                                        ptoupdate.y2 += ydelta
+                                        ptoupdate.slot_buttons = ptoupdate.slot_buttons.move(np.array([0, ydelta]))
+                                        if ptoupdate.y1 > 648:
+                                            skip_projects_after = max(skip_after, j)
+                                    if skip_after != sys.maxsize:
+                                        logger.info(f"Removing projects after idx {skip_after} from current queue due to exceeding Y")
+                                        skip_list = projects[skip_after:]
+                                        self.project = self.project.filter(lambda proj: proj.name not in skip_list.get('name'))
+                                break
+                        if success:
                             break
+                    
                 timeout.reset()
 
             if end:
