@@ -16,7 +16,6 @@ from module.logger import logger
 from module.map.map_grids import SelectedGrids
 from module.ocr.ocr import Duration, Ocr
 
-
 class ProjectNameOcr(Ocr):
     def after_process(self, result):
         result = super().after_process(result)
@@ -81,7 +80,7 @@ class IslandProject:
             return
 
         # id
-        keys = list(name_to_slot_cn.keys())
+        keys = list(name_to_slot.keys())
         if self.name in keys:
             self.id = keys.index(self.name) + 1
         else:
@@ -89,7 +88,7 @@ class IslandProject:
             return
 
         # max slot
-        self.max_slot = name_to_slot_cn.get(self.name, 2)
+        self.max_slot = name_to_slot.get(self.name, 2)
 
         # available slot
         area = (self.x1 - 383, self.y1 + 60, self.x1 - 39, self.y1 + 118)
@@ -278,13 +277,13 @@ class ProductItem:
         button = Button(area=area, color=(), button=area, name='ITEM_NAME')
         ocr = ItemNameOcr(button, lang='cnocr', letter=(70, 70, 70))
         self.name = ocr.ocr(self.image)
-        if server.server == 'cn' and (not self.name or self.name not in deep_values(items_data_cn, depth=2)):
+        if server.server == 'cn' and (not self.name or self.name not in deep_values(items_data, depth=2)):
             self.valid = False
         elif server.server == 'en':
             self.valid = False
             if not self.name:
                 return
-            for value in list(items_data_cn[self.parent_project_id].values()):
+            for value in list(items_data[self.parent_project_id].values()):
                 can_scroll = len(value) > 13
                 vmatcher = re.sub(r"[\s'-]+", "", value).lower()
                 if self.name == vmatcher:
@@ -726,7 +725,7 @@ class IslandProjectRun(IslandUI):
             if option == 0:
                 slot_option.append(None)
                 continue
-            slot_option.append(deep_get(items_data_cn, [proj_id, option]))
+            slot_option.append(deep_get(items_data, [proj_id, option]))
         return slot_option
 
     def island_project_run(self, names, trial=2, skip_first_screenshot=True):

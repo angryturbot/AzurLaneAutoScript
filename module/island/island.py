@@ -19,7 +19,7 @@ class Island(IslandProjectRun, IslandTransportRun):
             list[str]: a list of name for island receive
         """
         if any(config):
-            return [name for add, name in zip(config, list(name_to_slot_cn.keys())) if add]
+            return [name for add, name in zip(config, list(name_to_slot.keys())) if add]
         else:
             return []
 
